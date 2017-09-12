@@ -2,50 +2,57 @@
 
 function control_forces = PIDController( current_time, joint1_angle_setpoint, joint2_angle_setpoint, joint1_measured_angle, joint2_measured_angle, error1_dot, error2_dot )
 
-%% LAST KNOWN ERRORS AND TIME 
-persistent lastError;
-persistent lastTime;
-persistent totalIntegral;
+%% CONSTANTS
+kp = 10;     %Adjust the proportional term to get fast response (GO BIG)
+ki = 0;     %Adjust integeral term to get graph close to 0 (will cause overshoot)
+kd = 0;     %Adjust Derivative term to lower the overshoot
 
+%% PERSISTANT VARIABLES
+persistent last_time;
+persistent last_error;
+persistent total_integral;
 
-%% If first time running through PID
-if(isempty(lastTime) && isempty(lastError))
-    lastError = [0;0];
-    lastTime = 0.01;
-    totalIntegral = [0;0];
+if(isempty(last_time))
+   last_time = 0;
+   last_error = [0;0];
+   total_integral = [0;0];
 end
 
-%% Instantiate constants
-kp = 1;
-kd = 1;
-ki = 1;
+%% TIME
+delta_time = current_time - last_time;
 
+%% CURRENT ERROR
+current_error = [joint1_angle_setpoint - joint1_measured_angle;
+    joint1_angle_setpoint - joint1_measured_angle];
 
-%% CALCULATING PID FOR BOTH JOINTS
-% f(x) = Kp(desiredYaw - actualYaw) + Kd(deltaError/deltaTime) + integral[(errordt)Ki]
+%% ITERATE INTEGRAL
+total_integral(1) = (total_integral(1) + current_error(1));
+total_integral(2) = (total_integral(2) + current_error(2));
 
-dTime = current_time - lastTime;
+%% CALCULATE DERIVATIVE
+derivative = [0;0];
 
-propTerm = [joint1_angle_setpoint - joint1_measured_angle ;
-            joint2_angle_setpoint - joint2_measured_angle ];
-devTerm = (propTerm - lastError)./ dTime;        
-intTerm = dTime .* propTerm;
- 
- totalIntegral = totalIntegral + intTerm;
- 
- % calculating by using the derivative term given from the parameter of the
- % function
- control_forces = kp .* propTerm + kd .* [error1_dot;error2_dot] + ki .* totalIntegral;
- 
- % Calculating by using the the derivative term that we calacuated on our
- % own. To get more than 93/100 in this assignment we are supposed to
- % create a derivative term on our own. 
- % Formula for control force using our own derivative term is : 
- % control_forces = kp .* propTerm + kd .* devTerm + ki .* totalIntegral;
+if(delta_time ~= 0)
+    derivative = [(current_error(1) - last_error(1)) / delta_time;
+        (current_error(2) - last_error(2)) / delta_time];
+end
+%% OUTPUT
+Pout = [(kp * current_error(1));
+    (kp * current_error(2))];
 
+Iout = [(ki * total_integral(1));
+    (ki * total_integral(2))];
+    
+Dout = [(kd * derivative);
+    (kd * derivative)];
 
-%% Setup function for next calculation
-lastError = propTerm;
-lastTime = current_time;
+%% CALCULATE TORQUES
+torque1 = Pout(1) + Iout(1) + Dout(1);
+torque2 = Pout(2) + Iout(2) + Dout(2);
+
+last_error = current_error;
+last_time = current_time;
+
+control_forces = [torque1;torque2];
 
 end
