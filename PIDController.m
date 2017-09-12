@@ -3,9 +3,9 @@
 function control_forces = PIDController( current_time, joint1_angle_setpoint, joint2_angle_setpoint, joint1_measured_angle, joint2_measured_angle, error1_dot, error2_dot )
 
 %% CONSTANTS
-kp = 10;     %Adjust the proportional term to get fast response (GO BIG)
-ki = 0;     %Adjust integeral term to get graph close to 0 (will cause overshoot)
-kd = 0;     %Adjust Derivative term to lower the overshoot
+kp = 10;    %Adjust the proportional term to get fast response (GO BIG)
+ki = 0.85;     %Adjust integeral term to get graph close to 0 (will cause overshoot)
+kd = 1;     %Adjust Derivative term to lower the overshoot
 
 %% PERSISTANT VARIABLES
 persistent last_time;
@@ -23,7 +23,7 @@ delta_time = current_time - last_time;
 
 %% CURRENT ERROR
 current_error = [joint1_angle_setpoint - joint1_measured_angle;
-    joint1_angle_setpoint - joint1_measured_angle];
+    joint2_angle_setpoint - joint2_measured_angle];
 
 %% ITERATE INTEGRAL
 total_integral(1) = (total_integral(1) + current_error(1));
