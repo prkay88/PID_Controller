@@ -19,6 +19,12 @@ joint2_angle = x(4);
 link1_velocity = x(5);
 link2_velocity = x(6);
 
+if(joint1_angle > pi)
+    joint1_angle = joint1_angle - (2 * pi);
+elseif(joint1_angle < pi)
+    joint1_angle = joint1_angle + (2 * pi);
+end
+
 %% Inertial Forces
 inertial_forces = calcInertialForces(joint2_angle, M1, M2, L1, L2);
 

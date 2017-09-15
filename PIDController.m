@@ -1,11 +1,11 @@
 % Enter your solution to the assignment as the body of this function. Do not modify the code outside this file.
 
-function control_forces = PIDController( current_time, joint1_angle_setpoint, joint2_angle_setpoint, joint1_measured_angle, joint2_measured_angle, error1_dot, error2_dot )
+function control_forces = PIDController(current_time, joint1_angle_setpoint, joint2_angle_setpoint, joint1_measured_angle, joint2_measured_angle, error1_dot, error2_dot)
 
 %% CONSTANTS
-kp = 10;    %Adjust the proportional term to get fast response (GO BIG)
-ki = 0.85;     %Adjust integeral term to get graph close to 0 (will cause overshoot)
-kd = 1;     %Adjust Derivative term to lower the overshoot
+kp = 200;   %Adjust the proportional term to get fast response (GO BIG)
+ki = .20;     %Adjust integeral term to get graph close to 0 (will cause overshoot)
+kd = 100;     %Adjust Derivative term to lower the overshoot
 
 %% PERSISTANT VARIABLES
 persistent last_time;
@@ -22,8 +22,13 @@ end
 delta_time = current_time - last_time;
 
 %% CURRENT ERROR
-current_error = [joint1_angle_setpoint - joint1_measured_angle;
-    joint2_angle_setpoint - joint2_measured_angle];
+joint1_measured_angle;
+joint1_angle_setpoint;
+
+current_error = [(joint1_angle_setpoint - joint1_measured_angle);
+    (joint2_angle_setpoint - joint2_measured_angle)];
+
+%current_error = [0;0];
 
 %% ITERATE INTEGRAL
 total_integral(1) = (total_integral(1) + current_error(1));
@@ -36,8 +41,11 @@ if(delta_time ~= 0)
     derivative = [(current_error(1) - last_error(1)) / delta_time;
         (current_error(2) - last_error(2)) / delta_time];
 end
+
+derivative = [error1_dot;error2_dot];
+
 %% OUTPUT
-Pout = [(kp * current_error(1));
+Pout = [(kp * current_error(1))
     (kp * current_error(2))];
 
 Iout = [(ki * total_integral(1));
@@ -47,8 +55,8 @@ Dout = [(kd * derivative);
     (kd * derivative)];
 
 %% CALCULATE TORQUES
-torque1 = Pout(1) + Iout(1) + Dout(1);
-torque2 = Pout(2) + Iout(2) + Dout(2);
+torque1 = Pout(1) + Iout(1) - Dout(1);
+torque2 = Pout(2) + Iout(2) - Dout(2);
 
 last_error = current_error;
 last_time = current_time;
