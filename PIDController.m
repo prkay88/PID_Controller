@@ -5,7 +5,7 @@ function control_forces = PIDController( current_time, joint1_angle_setpoint, jo
 %% CONSTANTS
 kp = 170;   %Adjust the proportional term to get fast response (GO BIG)
 ki = .18;     %Adjust integeral term to get graph close to 0 (will cause overshoot)
-kd = 80;     %Adjust Derivative term to lower the overshoot
+kd = 35;     %Adjust Derivative term to lower the overshoot
 
 %% PERSISTANT VARIABLES
 persistent last_time;
