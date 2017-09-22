@@ -4,8 +4,13 @@ function control_forces = PIDController( current_time, joint1_angle_setpoint, jo
 
 %% CONSTANTS
 kp = 200;   %Adjust the proportional term to get fast response (GO BIG)
-ki = 0.0012;   %Adjust integeral term to get graph close to 0 (will cause overshoot) .0475
-kd = 75;   %Adjust Derivative term to lower the overshoot 75
+%ki = 0.0012;   %Adjust integeral term to get graph close to 0 (will cause overshoot) .0475
+%kd = 75;   %Adjust Derivative term to lower the overshoot 75
+
+ki1 = 0.0012;
+ki2 = 0.0046;   %Adjust integeral term to get graph close to 0 (will cause overshoot) .0475
+kd1 = 75;   %Adjust Derivative term to lower the overshoot 75
+kd2 = 110;
 
 %% PERSISTANT VARIABLES
 persistent last_time;   
@@ -46,11 +51,11 @@ end
 Pout = [(kp * current_error(1));
     (kp * current_error(2))];
 
-Iout = [(ki * total_integral(1));
-    (ki * total_integral(2))];
+Iout = [(ki1 * total_integral(1));
+    (ki2 * total_integral(2))];
 
-Dout = [(kd * derivative(1));
-    (kd * derivative(2))];
+Dout = [(kd1 * derivative(1));
+    (kd2 * derivative(2))];
 
 %% CALCULATE TORQUES
 torque1 = Pout(1) + Iout(1) + Dout(1);
